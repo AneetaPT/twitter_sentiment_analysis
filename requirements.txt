@@ -3,8 +3,10 @@ numpy
 seaborn
 matplotlib
 scikit-learn
-catboost
-xgboost
 Flask
 dill
+beautifulsoup4
+nltk
+gensim
+tensorflow==2.13.0
 -e .
