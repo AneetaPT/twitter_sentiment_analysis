@@ -5,8 +5,13 @@ import numpy as np
 import pandas as pd
 import dill
 import pickle
-from sklearn.metrics import r2_score
-from sklearn.model_selection import GridSearchCV
+from sklearn.feature_extraction.text import TfidfVectorizer
+from tensorflow.keras.preprocessing.text import Tokenizer
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+from tensorflow.keras.callbacks import EarlyStopping
+
+
+from src.exception import CustomException
 
 from src.exception import CustomException
 
@@ -22,41 +27,30 @@ def save_object(file_path, obj):
     except Exception as e:
         raise CustomException(e, sys)
     
-def evaluate_models(X_train, y_train,X_test,y_test,models,param):
-    try:
-        report = {}
-
-        for i in range(len(list(models))):
-            model = list(models.values())[i]
-            para=param[list(models.keys())[i]]
-
-            gs = GridSearchCV(model,para,cv=3)
-            gs.fit(X_train,y_train)
-
-            model.set_params(**gs.best_params_)
-            model.fit(X_train,y_train)
-
-            #model.fit(X_train, y_train)  # Train model
-
-            y_train_pred = model.predict(X_train)
-
-            y_test_pred = model.predict(X_test)
-
-            train_model_score = r2_score(y_train, y_train_pred)
-
-            test_model_score = r2_score(y_test, y_test_pred)
-
-            report[list(models.keys())[i]] = test_model_score
-
-        return report
-
-    except Exception as e:
-        raise CustomException(e, sys)
     
 def load_object(file_path):
     try:
         with open(file_path, "rb") as file_obj:
             return pickle.load(file_obj)
 
+    except Exception as e:
+        raise CustomException(e, sys)
+
+
+def tokenize_and_pad(X_train, X_test, num_words=5000, maxlen=50):
+    try:
+        if isinstance(X_train, np.ndarray):
+            X_train = X_train.astype(str).tolist()
+        if isinstance(X_test, np.ndarray):
+            X_test = X_test.astype(str).tolist()
+        tokenizer = Tokenizer(num_words=num_words, oov_token="<OOV>")
+        tokenizer.fit_on_texts(X_train)
+        X_train_seq = tokenizer.texts_to_sequences(X_train)
+        X_test_seq = tokenizer.texts_to_sequences(X_test)
+
+        X_train_padded = pad_sequences(X_train_seq, maxlen=maxlen, padding='post', truncating='post')
+        X_test_padded = pad_sequences(X_test_seq, maxlen=maxlen, padding='post', truncating='post')
+
+        return X_train_padded, X_test_padded
     except Exception as e:
         raise CustomException(e, sys)
