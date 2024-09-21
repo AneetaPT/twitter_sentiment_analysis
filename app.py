@@ -31,7 +31,7 @@ def predict_datapoint():
             pred = predict_pipeline.predict(data)  # Pass CustomData object
             
             # Interpret the result (positive/negative comment)
-            result = 'Positive' if pred[0] == 1 else 'Negative'
+            result = 'Positive' if pred[0] <=0.5 else 'Negative'
         except Exception as e:
             result = f'Error: {str(e)}'
 
@@ -62,7 +62,7 @@ def predict_api():
             logging.info('predicted value is', pred)
            
             # Interpret the result (positive/negative comment)
-            result = 'Positive' if pred[0] == 0 else 'Negative'
+            result = 'Positive' if pred[0] <= 0.5 else 'Negative'
 
             return jsonify({'sentiment': result})
         except Exception as e:

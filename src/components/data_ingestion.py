@@ -56,9 +56,9 @@ if __name__=="__main__":
     df=obj.initiate_data_ingestion()
 
     data_transformation=Word2VecProcessor()
-    x_train_arr,x_test_arr,y_train_arr,y_test_arr=data_transformation.initiate_data_transformation(df)
+    x_train,x_test,y_train,y_test,x_train_vec,x_test_vec,y_train_arr,y_test_arr=data_transformation.initiate_data_transformation(df)
 
     modeltrainer=ModelTrainer()
-    print(modeltrainer.initiate_model_trainer(x_train_arr,x_test_arr,y_train_arr,y_test_arr))
+    print(modeltrainer.initiate_model_trainer(x_train,x_test,y_train,y_test,x_train_vec,x_test_vec,y_train_arr,y_test_arr))
 
 

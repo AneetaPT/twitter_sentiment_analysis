@@ -22,15 +22,14 @@ class ModelTrainer:
     def __init__(self):
         self.model_trainer_config = ModelTrainerConfig()
 
-    def initiate_model_trainer(self, X_train_vectors, X_test_vectors, Y_train, Y_test):
+    def initiate_model_trainer(self,X_train,X_test,y_train,y_test,X_train_vectors, X_test_vectors, Y_train, Y_test):
+        
         try:
             # Tokenize and pad for deep learning models
-            X_train_padded, X_test_padded = tokenize_and_pad(X_train_vectors, X_test_vectors)
+            X_train_padded, X_test_padded = tokenize_and_pad(X_train, X_test)
 
-            Y_train = np.array(Y_train, dtype=np.int32)
-            Y_test = np.array(Y_test, dtype=np.int32)
 
-            # Train and evaluate traditional models
+           # Train and evaluate traditional models
             logging.info("Training Gaussian Naive Bayes model")
             gnb_model = GaussianNB().fit(X_train_vectors, Y_train)
             gnb_accuracy = accuracy_score(Y_test, gnb_model.predict(X_test_vectors))
@@ -46,8 +45,8 @@ class ModelTrainer:
             try:
                 logging.info("Building and training LSTM model")
                 lstm_model = self.build_lstm_model()
-                history1=lstm_model.fit(X_train_padded, Y_train, epochs=10, batch_size=32)
-                loss, lstm_accuracy =lstm_model.evaluate(X_test_padded, Y_test)
+                history1=lstm_model.fit(X_train_padded, y_train, epochs=10, batch_size=32)
+                loss, lstm_accuracy =lstm_model.evaluate(X_test_padded, y_test)
                 logging.info(f"LSTM Test Accuracy: {lstm_accuracy}")
             except Exception as e:
                 logging.error(f"Error during LSTM model training: {e}")
@@ -55,8 +54,8 @@ class ModelTrainer:
 
             logging.info("Building and training GRU model")
             gru_model = self.build_gru_model()
-            history2=gru_model.fit(X_train_padded, Y_train, epochs=10, batch_size=32)
-            loss, gru_accuracy =gru_model.evaluate(X_test_padded, Y_test)
+            history2=gru_model.fit(X_train_padded, y_train, epochs=15, batch_size=32, validation_split=0.1)
+            loss, gru_accuracy =gru_model.evaluate(X_test_padded, y_test)
             logging.info(f"GRU Test Accuracy: {gru_accuracy}")
 
             # Compare accuracies and save the best model

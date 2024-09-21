@@ -7,70 +7,51 @@ from src.exception import CustomException
 from src.logger import logging
 from src.utils import load_object
 import os
+from tensorflow.keras.preprocessing.text import Tokenizer
+from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 class PredictPipeline:
     def __init__(self):
-        self.preprocessor_path = os.path.join('artifacts', 'processed_data.pkl')
         self.model_path = os.path.join('artifacts', 'model.pkl')
+        self.tokenizer_path = os.path.join('artifacts', 'tokenizer.pkl')  # Path for the tokenizer
         
         try:
-            # Check if files exist before loading
-            if not os.path.exists(self.preprocessor_path):
-                raise FileNotFoundError(f"Preprocessor file not found: {self.preprocessor_path}")
             if not os.path.exists(self.model_path):
                 raise FileNotFoundError(f"Model file not found: {self.model_path}")
+            if not os.path.exists(self.tokenizer_path):
+                raise FileNotFoundError(f"Tokenizer file not found: {self.tokenizer_path}")
 
-            # Load preprocessor and model
-            with open(self.preprocessor_path, 'rb') as f:
-                self.preprocessor = pickle.load(f)
             self.model = load_object(file_path=self.model_path)
-            
-            # Load Word2Vec model from Gensim API
-            logging.info("Loading Word2Vec model from Gensim API...")
-            self.word2vec_model = api.load("word2vec-google-news-300")
-            logging.info("Word2Vec model loaded successfully.")
-        
-        except FileNotFoundError as e:
-            logging.error(f"File not found: {e}")
-            raise CustomException(e, sys)
+
+            with open(self.tokenizer_path, 'rb') as f:
+                self.tokenizer = pickle.load(f)  # Load the tokenizer
+           
         except Exception as e:
             logging.error("Error occurred while loading preprocessor, model, or Word2Vec model.")
             raise CustomException(e, sys)
 
     def predict(self, data):
         try:
-            # Handle both CustomData and raw strings
+            # Check if the input is an instance of CustomData
             if isinstance(data, CustomData):
-                df = data.get_data_as_dataframe()
+                comment = data.comment  # Get the comment attribute
             elif isinstance(data, str):
-                df = CustomData(comment=data).get_data_as_dataframe()
+                comment = data  # If it's a string, use it directly
             else:
                 raise ValueError("Data must be of type 'CustomData' or 'str'.")
 
-            # Preprocess the DataFrame
-            comment_preprocessed = self.preprocessor.transform(df['reviewText'])
-            logging.info("data transformation done")
-        
-            
-            # Convert preprocessed comments into Word2Vec vectors
-            vectors = []
-            for comment in comment_preprocessed:
-                tokens = comment.split()
-                comment_vectors = [self.word2vec_model[token] for token in tokens if token in self.word2vec_model]
-                
-                if comment_vectors:
-                    vectors.append(np.mean(comment_vectors, axis=0))
-                else:
-                    logging.warning("No vectors found for comment: {}".format(comment))
-            
-            if not vectors:
-                raise ValueError("No valid vectors found for the given comments.")
-            
-            # Convert list of vectors into a NumPy array
-            comment_vectors_array = np.array(vectors, dtype='float32')
-            
-            # Predict using the loaded model
-            predictions = self.model.predict(comment_vectors_array)
+            # Convert the received comment into a list (required for tokenization)
+            input_text = [comment]   # Wrap the string comment in a list
+
+            max_sequence_length = 50  # Ensure this matches your model's expected input length
+
+            # Tokenize and pad the input text
+            input_seq = self.tokenizer.texts_to_sequences(input_text)  # Use the loaded tokenizer
+            input_padded = pad_sequences(input_seq, maxlen=max_sequence_length, padding='post')  # Padding
+
+            # Predict using the loaded GRU model
+            predictions = self.model.predict(input_padded)
+
             return predictions
         
         except ValueError as e:
@@ -79,7 +60,6 @@ class PredictPipeline:
         except Exception as e:
             logging.error('Exception occurred in prediction pipeline')
             raise CustomException(e, sys)
-        
 class CustomData:
     def __init__(self, comment: str):
         self.comment = comment

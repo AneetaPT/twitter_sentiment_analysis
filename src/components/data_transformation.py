@@ -167,7 +167,7 @@ class Word2VecProcessor:
             Y_train = [y_train.iloc[i]['review_Negative'] for i in train_valid_indices]
             Y_test = [y_test.iloc[i]['review_Negative'] for i in test_valid_indices]
 
-            return X_train_vectors, X_test_vectors, Y_train, Y_test
+            return X_train,X_test,y_train,y_test,X_train_vectors, X_test_vectors, Y_train, Y_test
         except Exception as e:
             logging.exception("Error occurred in Word2Vec processing pipeline.")
             raise CustomException(e, sys)

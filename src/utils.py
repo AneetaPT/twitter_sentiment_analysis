@@ -36,18 +36,25 @@ def load_object(file_path):
     except Exception as e:
         raise CustomException(e, sys)
 
-
-def tokenize_and_pad(X_train, X_test, num_words=5000, maxlen=50):
+def tokenize_and_pad(X_train, X_test, num_words=5000, maxlen=50, tokenizer_path='artifacts/tokenizer.pkl'):
     try:
-        if isinstance(X_train, np.ndarray):
-            X_train = X_train.astype(str).tolist()
-        if isinstance(X_test, np.ndarray):
-            X_test = X_test.astype(str).tolist()
-        tokenizer = Tokenizer(num_words=num_words, oov_token="<OOV>")
-        tokenizer.fit_on_texts(X_train)
+        # Load tokenizer if it exists, otherwise create a new one
+        tokenizer_path: str = os.path.join('artifacts', 'tokenizer.pkl')
+        if os.path.exists(tokenizer_path):
+            with open(tokenizer_path, 'rb') as handle:
+                tokenizer = pickle.load(handle)
+        else:
+            tokenizer = Tokenizer(num_words=num_words, oov_token="<OOV>")
+            tokenizer.fit_on_texts(X_train)
+            # Save the tokenizer for future use
+            with open(tokenizer_path, 'wb') as handle:
+                pickle.dump(tokenizer, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+        # Tokenize the training and testing data
         X_train_seq = tokenizer.texts_to_sequences(X_train)
         X_test_seq = tokenizer.texts_to_sequences(X_test)
 
+        # Pad sequences to ensure uniform input size
         X_train_padded = pad_sequences(X_train_seq, maxlen=maxlen, padding='post', truncating='post')
         X_test_padded = pad_sequences(X_test_seq, maxlen=maxlen, padding='post', truncating='post')
 
