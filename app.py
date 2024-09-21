@@ -3,8 +3,7 @@ from flask_cors import CORS, cross_origin
 from src.pipeline.predict_pipeline import CustomData, PredictPipeline
 from src.logger import logging
 
-application = Flask(__name__)
-app = application
+app =  Flask(__name__)
 
 @app.route('/')
 @cross_origin()
