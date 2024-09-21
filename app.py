@@ -3,7 +3,6 @@ from flask_cors import CORS, cross_origin
 from src.pipeline.predict_pipeline import CustomData, PredictPipeline
 from src.logger import logging
 
-
 application = Flask(__name__)
 app = application
 
@@ -20,7 +19,7 @@ def predict_datapoint():
         comment = request.form.get('comment')
 
         if not comment:
-            return render_template('index.html', results='Error: No comment provided')
+            return render_template('index.html', results='Error: No comment provided', comment='')
 
         # Initialize the prediction pipeline
         predict_pipeline = PredictPipeline()
@@ -37,7 +36,7 @@ def predict_datapoint():
         except Exception as e:
             result = f'Error: {str(e)}'
 
-        return render_template('index.html', results=result)
+        return render_template('index.html', results=result, comment=comment)  # Pass the comment back to the template
     else:
         return render_template('index.html')
 
@@ -61,7 +60,7 @@ def predict_api():
 
             # Perform the prediction
             pred = predict_pipeline.predict(data)  # Pass CustomData object
-            logging.info('predicted value is',pred)
+            logging.info('predicted value is', pred)
            
             # Interpret the result (positive/negative comment)
             result = 'Positive' if pred[0] == 0 else 'Negative'

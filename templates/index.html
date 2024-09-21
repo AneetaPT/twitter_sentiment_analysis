@@ -3,10 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sentiment Analysis</title>
+  <title>Comment Sentiment Predictor</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   <style>
     body {
+      background-color: #001f3f; /* Dark blue background */
+      color: #ffffff; /* White text for contrast */
       font-family: Arial, sans-serif;
       display: flex;
       justify-content: center;
@@ -18,7 +20,10 @@
     .container {
       display: flex;
       width: 80%;
-      height: 50%;
+      height: 60%;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.7);
+      background-color: #003366; /* Slightly lighter blue for the container */
     }
 
     .form-box, .result-box {
@@ -27,7 +32,7 @@
     }
 
     .form-box {
-      border-right: 2px solid #ddd;
+      border-right: 2px solid #00509E;
     }
 
     .form-group {
@@ -39,30 +44,41 @@
       margin-bottom: 5px;
     }
 
-    input[type="text"], textarea {
+    textarea {
       width: 100%;
       padding: 10px;
       border-radius: 5px;
-      border: 1px solid #ccc;
+      border: 1px solid #007bff;
+      background-color: #004080; /* Text area background */
+      color: #ffffff; /* Text area text color */
     }
 
-    input[type="submit"] {
+    input[type="submit"], .try-again {
       padding: 10px 15px;
-      background-color: #28a745;
+      background-color: #00509E; /* Standard blue color */
       color: white;
       border: none;
       border-radius: 5px;
       cursor: pointer;
+      transition: background-color 0.3s;
+      margin-top: 10px; /* Space above the buttons */
+      margin-right: 5px; /* Space between buttons */
+    }
+
+    input[type="submit"]:hover, .try-again:hover {
+      background-color: #007bff; /* Lighter blue on hover */
     }
 
     h2 {
       margin-top: 0;
+      color: #00bfff; /* Light blue color for headings */
     }
 
     .result-box {
       display: flex;
       align-items: center;
       justify-content: center;
+      background-color: #003366; /* Result box background */
     }
 
     .result {
@@ -74,13 +90,14 @@
 <body>
   <div class="container">
     <div class="form-box">
-      <h2>Sentiment Analysis</h2>
+      <h2>Comment Sentiment Predictor</h2>
       <form action="{{ url_for('predict_datapoint') }}" method="POST">
         <div class="form-group">
-          <label for="comment">Enter Comment:</label>
-          <textarea id="comment" name="comment" rows="5" placeholder="Enter your comment here"></textarea>
+          <label for="comment">Enter Your Comment:</label>
+          <textarea id="comment" name="comment" rows="5" placeholder="Enter your comment here">{{ comment }}</textarea>
         </div>
         <input type="submit" value="Predict">
+        <input type="button" class="try-again" value="Try Again" onclick="resetForm();">
       </form>
     </div>
     <div class="result-box">
@@ -91,5 +108,12 @@
       </div>
     </div>
   </div>
+
+  <script>
+    function resetForm() {
+      document.getElementById('comment').value = ''; // Clear the comment field
+      window.location.href = '{{ url_for("home_page") }}'; // Redirect to home page
+    }
+  </script>
 </body>
 </html>
